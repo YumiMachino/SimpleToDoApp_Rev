@@ -44,6 +44,7 @@ class ToDoItemTableViewCell: UITableViewCell {
         priorityLevel = toDoItem.priorityLevel
     }
     
+    
     // CHECKMARK
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
@@ -52,12 +53,14 @@ class ToDoItemTableViewCell: UITableViewCell {
         if self.isCompletedIndicator == true {
             self.isCompletedIndicator = false
             self.checkmarkLabel.text = " "
-            self.isSelected = false
+//            self.isSelected = false
+            
         } else {
             self.isCompletedIndicator = true
             self.checkmarkLabel.text = "✔️"
-            self.isSelected = false
+//            self.isSelected = false
         }
+      
     }
     
 

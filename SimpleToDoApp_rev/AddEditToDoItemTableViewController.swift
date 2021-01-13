@@ -30,16 +30,18 @@ class AddEditToDoItemTableViewController: UITableViewController {
     var titleCell = AddEditTableViewCell()
     var segmentControlCell = SegmentCtrlTableViewCell()
     
-   
+    var itemPriorityLevel: priorityLevel = .medium
 
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.navigationBar.prefersLargeTitles = true
+        
         if item == nil {
             title = "Add ToDo Item"
         } else {
             title = "Edit ToDo Item"
             titleCell.textField.text = item?.title
+            item?.priorityLevel = itemPriorityLevel
             
             switch item?.priorityLevel {
             case .high:
@@ -103,8 +105,12 @@ class AddEditToDoItemTableViewController: UITableViewController {
         if item == nil {
             delegate?.add(newItem)
         } else {
-        
-            delegate?.edit(newItem)
+            // もしsegmentValueが変わったら
+            if itemPriorityLevel != newItem.priorityLevel {
+                // もしpriority変更したら
+            } else {
+                delegate?.edit(newItem)
+            }
         }
         
         

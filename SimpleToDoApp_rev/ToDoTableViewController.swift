@@ -84,36 +84,28 @@ class ToDoTableViewController: UITableViewController, AddEditToDoDelegate {
         dismiss(animated: true, completion: nil)
     }
     
+    // priorityを変更しないで、titleだけeditの場合
     func edit(_ toDoItem: ToDoItem) {
-        // title , priority
-        // grab data from selected index path
         // update model, update view
         // remove data, insert/append data, update view
+
+
         print("edit")
-       
+        print(self.tableView.indexPathForSelectedRow)
+        // indexPath -> AddEditTVC のrow?
         if let indexPath = tableView.indexPathForSelectedRow {
             print(indexPath)
+
             switch indexPath.section {
             case 0:
                 if let row = tableView.indexPathForSelectedRow?.row {
-                    highPriorityItems.remove(at: row)
-                }
-                // Add edit segment ctrl func で obserbe
-                if toDoItem.priorityLevel == .high {
-                    highPriorityItems.insert(toDoItem, at: highPriorityItems.count - 1)
-                } else if toDoItem.priorityLevel == .medium {
-                        mediumPriorityItems.append(toDoItem)
-                } else if toDoItem.priorityLevel == .low {
-                        lowPriorityItems.append(toDoItem)
-                } else {
-                        fatalError()
-                }
-                    
-                tableView.reloadData()
-//                    tableView.reloadRows(at: [indexPath], with: .automatic)
+                highPriorityItems.remove(at: row)
+                highPriorityItems.insert(toDoItem, at: row)
+
+                tableView.reloadRows(at: [indexPath], with: .automatic)
                 tableView.deselectRow(at: indexPath, animated: true)
-                print(lowPriorityItems)
-                    
+                print(highPriorityItems)
+                }
 //            case 1:
 //                if let row = tableView.indexPathForSelectedRow?.row {
 //                    mediumPriorityItems.remove(at: row)
@@ -151,7 +143,7 @@ class ToDoTableViewController: UITableViewController, AddEditToDoDelegate {
             default:
                 fatalError("Error")
             }
-            
+
         }
             toDoItemsUpdate()
             dismiss(animated: true, completion: nil)
@@ -259,7 +251,7 @@ class ToDoTableViewController: UITableViewController, AddEditToDoDelegate {
    
     
     
-    // When Accessory button tapped
+    // When Accessory button tapped    -> Selectになっていない!!!!(チェックマークをついてない時、セレクトになってない)
     override func tableView(_ tableView: UITableView, accessoryButtonTappedForRowWith indexPath: IndexPath) {
         // go to Add edit screen
         let addEditTVC = AddEditToDoItemTableViewController(style: .insetGrouped)
@@ -267,7 +259,8 @@ class ToDoTableViewController: UITableViewController, AddEditToDoDelegate {
         let addEditNC = UINavigationController(rootViewController: addEditTVC)
         present(addEditNC, animated: true, completion: nil)
         
-    
+        print(indexPath)                //<- nil
+        
         switch indexPath.section {
         case 0:
             addEditTVC.item = highPriorityItems[indexPath.row]
@@ -279,4 +272,9 @@ class ToDoTableViewController: UITableViewController, AddEditToDoDelegate {
             fatalError("no item found")
         }
     }
+    
+    
+
+    
+    
 }

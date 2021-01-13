@@ -9,10 +9,8 @@ import UIKit
 
 protocol AddEditToDoDelegate: class {
     func add(_ toDoItem: ToDoItem)
-    func edit(_ toDoItem: ToDoItem)
+    func edit(_ toDoItem: ToDoItem, _ originalIndexPath: IndexPath, _ originalPriorityLevel: priorityLevel)
 }
-
-
 
 
 class AddEditToDoItemTableViewController: UITableViewController {
@@ -22,7 +20,8 @@ class AddEditToDoItemTableViewController: UITableViewController {
     let saveButton =  UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector(saveToDoItem))
     
     var item: ToDoItem?
-    
+    var originalIndexPath: IndexPath?
+ 
     // receive those whose delegate
     weak var delegate: AddEditToDoDelegate?
     
@@ -30,7 +29,7 @@ class AddEditToDoItemTableViewController: UITableViewController {
     var titleCell = AddEditTableViewCell()
     var segmentControlCell = SegmentCtrlTableViewCell()
     
-    var itemPriorityLevel: priorityLevel = .medium
+    var itemPriorityLevel: priorityLevel?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,8 +40,6 @@ class AddEditToDoItemTableViewController: UITableViewController {
         } else {
             title = "Edit ToDo Item"
             titleCell.textField.text = item?.title
-            item?.priorityLevel = itemPriorityLevel
-            
             switch item?.priorityLevel {
             case .high:
                 segmentControlCell.segmentControl.selectedSegmentIndex = 0
@@ -51,10 +48,9 @@ class AddEditToDoItemTableViewController: UITableViewController {
             case .low:
                 segmentControlCell.segmentControl.selectedSegmentIndex = 2
             default:
-                fatalError("Error")
+                fatalError()
             }
         }
-      
         segmentControlCell.segmentControl.addTarget(self, action: #selector(segmentControlValueChanged(_:)), for: .touchUpInside)
         // navigation buttons
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(dismissTVC))
@@ -77,7 +73,6 @@ class AddEditToDoItemTableViewController: UITableViewController {
             fatalError()
         }
     }
-    
     
     func segmentValue() -> priorityLevel {
         switch segmentControlCell.segmentControl.selectedSegmentIndex {
@@ -105,19 +100,13 @@ class AddEditToDoItemTableViewController: UITableViewController {
         if item == nil {
             delegate?.add(newItem)
         } else {
-            // もしsegmentValueが変わったら
-            if itemPriorityLevel != newItem.priorityLevel {
-                // もしpriority変更したら
-            } else {
-                delegate?.edit(newItem)
+            //original priorityとoriginal path
+            if let originalPriority = item?.priorityLevel, let originalIndexPath = originalIndexPath  {
+            delegate?.edit(newItem, originalIndexPath, originalPriority )
             }
         }
-        
-        
-        
     }
-
-    
+            
     func updateSaveBtnState(){
         saveButton.isEnabled = checkText(titleCell.textField)
         
@@ -133,8 +122,6 @@ class AddEditToDoItemTableViewController: UITableViewController {
         updateSaveBtnState()
     }
     
-    
-    
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -145,7 +132,6 @@ class AddEditToDoItemTableViewController: UITableViewController {
         return 1
     }
 
-  
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath {
         case [0, 0]:
@@ -171,56 +157,6 @@ class AddEditToDoItemTableViewController: UITableViewController {
             return 44.0
         }
     }
-
-        
-        
-        
-    }
+}
     
-    
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
-    }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
-    }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 

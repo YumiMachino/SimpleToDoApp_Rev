@@ -21,13 +21,9 @@ class SegmentCtrlTableViewCell: UITableViewCell {
         super.init(style: .default, reuseIdentifier: reuseIdentifier)
          contentView.addSubview(segmentControl)
         segmentControl.matchParent(padding: .init(top: 30, left: 8, bottom: 30, right: 8))
-       
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    
-    
 }

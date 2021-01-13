@@ -8,11 +8,9 @@
 import Foundation
 
 struct ToDoItem {
-    
     var title: String
     var priorityLevel: priorityLevel
     var isCompletedIndicator: Bool
-    
 }
 
 

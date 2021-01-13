@@ -10,20 +10,16 @@ import UIKit
 class ToDoTableViewController: UITableViewController, AddEditToDoDelegate {
     var cellId = "toDoItemCell"
     
-//    var toDoItems: [ToDoItem] = [
-//        ToDoItem(title:"Take a walk", priorityLevel: priorityLevel.high, isCompletedIndicator: false),
-//        ToDoItem(title:"Study Design pattern", priorityLevel: priorityLevel.high, isCompletedIndicator: false),
-//        ToDoItem(title:"Study iOS", priorityLevel: priorityLevel.medium, isCompletedIndicator: false),
-//        ToDoItem(title:"Update Resume", priorityLevel: priorityLevel.medium, isCompletedIndicator: false),
-//        ToDoItem(title:"Watch Netflix", priorityLevel: priorityLevel.low, isCompletedIndicator: false),
-//        ToDoItem(title:"Finish Unit6", priorityLevel: priorityLevel.high, isCompletedIndicator: false),
-//        ToDoItem(title:"Do laundry", priorityLevel: priorityLevel.medium, isCompletedIndicator: false),
-//        ToDoItem(title:"Go to grocery shopping", priorityLevel: priorityLevel.low, isCompletedIndicator: false)
-//    ]
     var toDoItems: [ToDoItem] = [
         ToDoItem(title:"Take a walk", priorityLevel: priorityLevel.high, isCompletedIndicator: false),
-        ToDoItem(title:"Study Design pattern", priorityLevel: priorityLevel.medium, isCompletedIndicator: false),
-        ToDoItem(title:"Study iOS", priorityLevel: priorityLevel.low, isCompletedIndicator: false)]
+        ToDoItem(title:"Study Design pattern", priorityLevel: priorityLevel.high, isCompletedIndicator: false),
+        ToDoItem(title:"Study iOS", priorityLevel: priorityLevel.medium, isCompletedIndicator: false),
+        ToDoItem(title:"Update Resume", priorityLevel: priorityLevel.medium, isCompletedIndicator: false),
+        ToDoItem(title:"Watch Netflix", priorityLevel: priorityLevel.low, isCompletedIndicator: false),
+        ToDoItem(title:"Finish Unit6", priorityLevel: priorityLevel.high, isCompletedIndicator: false),
+        ToDoItem(title:"Do laundry", priorityLevel: priorityLevel.medium, isCompletedIndicator: false),
+        ToDoItem(title:"Go to grocery shopping", priorityLevel: priorityLevel.low, isCompletedIndicator: false)
+    ]
     
     var sections:[String] = ["High Priority", "Medium Priority", "Low Priority"]
     
@@ -31,32 +27,58 @@ class ToDoTableViewController: UITableViewController, AddEditToDoDelegate {
     var mediumPriorityItems:[ToDoItem] = []
     var lowPriorityItems:[ToDoItem] = []
     
-    
+    lazy var navTrashButton = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(didPressDelete))
+    lazy var addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addToDoItem))
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         navigationController?.navigationBar.prefersLargeTitles = true
         title = "ToDo Items"
-        
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addToDoItem))
+
+        navigationItem.rightBarButtonItems = [addButton, navTrashButton]
         navigationItem.leftBarButtonItem = editButtonItem
-        
+        navTrashButton.isEnabled = false
+       
+        // register custom TableViewCell
         tableView.register(ToDoItemTableViewCell.self, forCellReuseIdentifier: cellId)
         sortItems()
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
+        
+        // multiple deletion
+        tableView.allowsMultipleSelectionDuringEditing = true
     }
+
+    
+    @objc
+    func didPressDelete(_ sender: UIButton) {
+        // selected IndexPath
+        if let selectedIndexPaths = tableView.indexPathsForSelectedRows {
+            for selectedIndexPath in selectedIndexPaths {
+                switch selectedIndexPath.section {
+                case 0:
+                    highPriorityItems.remove(at: selectedIndexPath.row)
+                    tableView.deleteRows(at: [selectedIndexPath], with: .automatic)
+                case 1:
+                    mediumPriorityItems.remove(at: selectedIndexPath.row)
+                    tableView.deleteRows(at: [selectedIndexPath], with: .automatic)
+                case 2:
+                    lowPriorityItems.remove(at: selectedIndexPath.row)
+                    tableView.deleteRows(at: [selectedIndexPath], with: .automatic)
+                default:
+                 fatalError()
+                }
+            }
+            toDoItemsUpdate()
+        }
+        navTrashButton.isEnabled = false
+    }
+    
     
     func toDoItemsUpdate(){
         toDoItems = []
         toDoItems = highPriorityItems + mediumPriorityItems + lowPriorityItems
     }
 
-    
     @objc
     func addToDoItem(){
         let addEditTVC = AddEditToDoItemTableViewController()
@@ -84,80 +106,78 @@ class ToDoTableViewController: UITableViewController, AddEditToDoDelegate {
         dismiss(animated: true, completion: nil)
     }
     
-    // priorityを変更しないで、titleだけeditの場合
-    func edit(_ toDoItem: ToDoItem) {
-        // update model, update view
+    func edit(_ toDoItem: ToDoItem, _ originalIndexPath: IndexPath, _  originalPriorityLevel: priorityLevel) {
         // remove data, insert/append data, update view
-
-
-        print("edit")
-        print(self.tableView.indexPathForSelectedRow)
-        // indexPath -> AddEditTVC のrow?
-        if let indexPath = tableView.indexPathForSelectedRow {
-            print(indexPath)
-
-            switch indexPath.section {
+        let section = originalIndexPath.section
+        let row = originalIndexPath.row
+        // when priority not changed
+        if toDoItem.priorityLevel == originalPriorityLevel {
+            switch section {
             case 0:
-                if let row = tableView.indexPathForSelectedRow?.row {
                 highPriorityItems.remove(at: row)
                 highPriorityItems.insert(toDoItem, at: row)
-
-                tableView.reloadRows(at: [indexPath], with: .automatic)
-                tableView.deselectRow(at: indexPath, animated: true)
-                print(highPriorityItems)
-                }
-//            case 1:
-//                if let row = tableView.indexPathForSelectedRow?.row {
-//                    mediumPriorityItems.remove(at: row)
-//                    if toDoItem.priorityLevel == .high {
-//                        highPriorityItems.insert(toDoItem, at: highPriorityItems.count - 1)
-//                    } else if toDoItem.priorityLevel == .medium {
-//                        mediumPriorityItems.insert(toDoItem, at: mediumPriorityItems.count - 1)
-//                    } else if toDoItem.priorityLevel == .low {
-//                        lowPriorityItems.insert(toDoItem, at: lowPriorityItems.count - 1)
-//                    } else {
-//                        fatalError()
-//                    }
-//
-//
-//                    tableView.reloadRows(at: [indexPath], with: .automatic)
-//                    tableView.deselectRow(at: indexPath, animated: true)
-//                    }
-//            case 2:
-//                if let row = tableView.indexPathForSelectedRow?.row {
-//                    lowPriorityItems.remove(at: row)
-//                    if toDoItem.priorityLevel == .high {
-//                        highPriorityItems.insert(toDoItem, at: highPriorityItems.count - 1)
-//                    } else if toDoItem.priorityLevel == .medium {
-//                        mediumPriorityItems.insert(toDoItem, at: mediumPriorityItems.count - 1)
-//                    } else if toDoItem.priorityLevel == .low {
-//                        lowPriorityItems.insert(toDoItem, at: lowPriorityItems.count - 1)
-//                    } else {
-//                        fatalError()
-//                    }
-//
-//
-//                    tableView.reloadRows(at: [indexPath], with: .automatic)
-//                    tableView.deselectRow(at: indexPath, animated: true)
-//                    }
+                tableView.reloadRows(at: [originalIndexPath], with: .automatic)
+                tableView.deselectRow(at: originalIndexPath, animated: true)
+            case 1:
+                mediumPriorityItems.remove(at: row)
+                mediumPriorityItems.insert(toDoItem, at: row)
+                tableView.reloadRows(at: [originalIndexPath], with: .automatic)
+                tableView.deselectRow(at: originalIndexPath, animated: true)
+            case 2:
+                lowPriorityItems.remove(at: row)
+                lowPriorityItems.insert(toDoItem, at: row)
+                tableView.reloadRows(at: [originalIndexPath], with: .automatic)
+                tableView.deselectRow(at: originalIndexPath, animated: true)
             default:
-                fatalError("Error")
+                fatalError()
             }
-
+        } else {
+            //when priority is edited
+                switch section {
+                case 0:
+                    // remove element, and delete row
+                    highPriorityItems.remove(at: row)
+                    tableView.deleteRows(at: [IndexPath(row: row, section: 0)], with: .automatic)
+                    if toDoItem.priorityLevel == .medium {
+                        mediumPriorityItems.append(toDoItem)
+                        tableView.insertRows(at: [IndexPath(row: mediumPriorityItems.count - 1, section: 1)], with: .automatic)
+                    }
+                    if toDoItem.priorityLevel == .low {
+                        lowPriorityItems.append(toDoItem)
+                        tableView.insertRows(at: [IndexPath(row: lowPriorityItems.count - 1, section: 2)], with: .automatic)
+                    }
+                case 1:
+                    mediumPriorityItems.remove(at: row)
+                    tableView.deleteRows(at: [IndexPath(row: row, section: 1)], with: .automatic)
+                    if toDoItem.priorityLevel == .high {
+                        highPriorityItems.append(toDoItem)
+                        tableView.insertRows(at: [IndexPath(row: highPriorityItems.count - 1, section: 0)], with: .automatic)
+                    }
+                    if toDoItem.priorityLevel == .low {
+                        lowPriorityItems.append(toDoItem)
+                        tableView.insertRows(at: [IndexPath(row: lowPriorityItems.count - 1, section: 2)], with: .automatic)
+                    }
+                case 2:
+                    lowPriorityItems.remove(at: row)
+                    tableView.deleteRows(at: [IndexPath(row: row, section: 2)], with: .automatic)
+                    if toDoItem.priorityLevel == .high {
+                        highPriorityItems.append(toDoItem)
+                        tableView.insertRows(at: [IndexPath(row: highPriorityItems.count - 1, section: 0)], with: .automatic)
+                    }
+                    if toDoItem.priorityLevel == .medium {
+                        mediumPriorityItems.append(toDoItem)
+                        tableView.insertRows(at: [IndexPath(row: mediumPriorityItems.count - 1, section: 1)], with: .automatic)
+                    }
+                default:
+                    fatalError()
+                }
+            tableView.deselectRow(at: originalIndexPath, animated: true)
         }
-            toDoItemsUpdate()
-            dismiss(animated: true, completion: nil)
-            print(toDoItems)
-        }
-    
-    
-
-    
-    
-    
-    
+        toDoItemsUpdate()
+        dismiss(animated: true, completion: nil)
+    }
+  
     // MARK: - Table view data source
-
     override func numberOfSections(in tableView: UITableView) -> Int {
         return sections.count
     }
@@ -191,7 +211,6 @@ class ToDoTableViewController: UITableViewController, AddEditToDoDelegate {
         }
     }
     
-  
     // DEQUE REUSABLE CELL
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! ToDoItemTableViewCell
@@ -228,30 +247,16 @@ class ToDoTableViewController: UITableViewController, AddEditToDoDelegate {
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return sections[section]
     }
-    
-    // DELETE
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        
-        guard editingStyle == .delete else {return }
-        switch indexPath.section {
-        case 0:
-            // update model
-            highPriorityItems.remove(at: indexPath.row)
-        case 1:
-            mediumPriorityItems.remove(at: indexPath.row)
-        case 2:
-            lowPriorityItems.remove(at: indexPath.row)
-        default:
-            fatalError()
-        }
-        // update view
-        tableView.deleteRows(at: [indexPath], with: .automatic)
-        toDoItemsUpdate()
-    }
    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+         if isEditing  == true {
+            navTrashButton.isEnabled = true
+         } else {
+            navTrashButton.isEnabled = false
+         }
+    }
     
-    
-    // When Accessory button tapped    -> Selectになっていない!!!!(チェックマークをついてない時、セレクトになってない)
+    // When Accessory button tapped
     override func tableView(_ tableView: UITableView, accessoryButtonTappedForRowWith indexPath: IndexPath) {
         // go to Add edit screen
         let addEditTVC = AddEditToDoItemTableViewController(style: .insetGrouped)
@@ -259,7 +264,8 @@ class ToDoTableViewController: UITableViewController, AddEditToDoDelegate {
         let addEditNC = UINavigationController(rootViewController: addEditTVC)
         present(addEditNC, animated: true, completion: nil)
         
-        print(indexPath)                //<- nil
+        // store original indexPath
+        addEditTVC.originalIndexPath = indexPath
         
         switch indexPath.section {
         case 0:
@@ -273,8 +279,58 @@ class ToDoTableViewController: UITableViewController, AddEditToDoDelegate {
         }
     }
     
-    
+    // MOVE ROW: use with showsReorderControl
+    override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
 
-    
-    
+        // Update model
+        switch sourceIndexPath.section {
+        case 0:
+            var removeItem = highPriorityItems.remove(at: sourceIndexPath.row)
+            switch destinationIndexPath.section {
+            case 0:
+                highPriorityItems.insert(removeItem, at: destinationIndexPath.row)
+            case 1:
+                removeItem.priorityLevel = .medium
+                mediumPriorityItems.insert(removeItem, at: destinationIndexPath.row)
+            case 2:
+                removeItem.priorityLevel = .low
+                lowPriorityItems.insert(removeItem, at: destinationIndexPath.row)
+            default:
+                fatalError()
+            }
+        case 1:
+            var removeItem = mediumPriorityItems.remove(at: sourceIndexPath.row)
+            switch destinationIndexPath.section {
+            case 0:
+                removeItem.priorityLevel = .high
+                highPriorityItems.insert(removeItem, at: destinationIndexPath.row)
+            case 1:
+                mediumPriorityItems.insert(removeItem, at: destinationIndexPath.row)
+            case 2:
+                removeItem.priorityLevel = .low
+                lowPriorityItems.insert(removeItem, at: destinationIndexPath.row)
+            default:
+                fatalError()
+            }
+        case 2:
+            var removeItem = lowPriorityItems.remove(at: sourceIndexPath.row)
+            switch destinationIndexPath.section {
+            case 0:
+                removeItem.priorityLevel = .high
+                highPriorityItems.insert(removeItem, at: destinationIndexPath.row)
+
+            case 1:
+                removeItem.priorityLevel = .medium
+                mediumPriorityItems.insert(removeItem, at: destinationIndexPath.row)
+            case 2:
+                lowPriorityItems.insert(removeItem, at: destinationIndexPath.row)
+            default:
+                fatalError()
+            }
+        default:
+            fatalError()
+        }
+        // update model
+        toDoItemsUpdate()
+    }
 }

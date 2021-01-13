@@ -53,17 +53,9 @@ class ToDoItemTableViewCell: UITableViewCell {
         if self.isCompletedIndicator == true {
             self.isCompletedIndicator = false
             self.checkmarkLabel.text = " "
-//            self.isSelected = false
-            
         } else {
             self.isCompletedIndicator = true
             self.checkmarkLabel.text = "✔️"
-//            self.isSelected = false
         }
-      
     }
-    
-
-    
-    
 }
